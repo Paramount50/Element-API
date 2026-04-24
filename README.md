@@ -38,13 +38,13 @@ You get:      Clean JSON every time, healed automatically
 
 ```bash
 # Create an API
-curl -X POST https://your-api.onrender.com/api/v1/endpoints \
+curl -X POST https://elementapi-backend.onrender.com/api/v1/endpoints \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"name": "HN Top Stories", "url": "https://news.ycombinator.com", "selector": ".titleline > a"}'
 
 # Use it
-curl https://your-api.onrender.com/api/v1/run/hn-top-stories \
+curl https://elementapi-backend.onrender.com/api/v1/run/hn-top-stories \
   -H "X-API-Key: sk_live_xxxxx"
 
 # Response
@@ -108,7 +108,7 @@ The backend follows a modular, layered architecture — routes, services, and da
 | **Browser** | Playwright (Chromium) | Headless rendering for JavaScript-heavy pages |
 | **Auth** | Supabase + JWT | Managed auth with local JWT verification for speed |
 | **Stealth** | playwright-stealth + fake-useragent | Bypass bot detection on target sites |
-| **Frontend** | Vanilla HTML/CSS/JS + Tailwind | Simple, fast, deployed on Vercel |
+| **Frontend** | SvelteKit + Tailwind | Reactive dashboard, deployed on Vercel |
 | **Deployment** | Render (backend) + Vercel (frontend) | Zero-config deploys with auto-scaling |
 
 ---
@@ -120,6 +120,73 @@ The backend follows a modular, layered architecture — routes, services, and da
 - **Database migrations** — Alembic handles all schema changes with full rollback support
 - **Comprehensive test suite** — Pytest with mocked network requests to validate healing strategies deterministically
 - **Type safety** — Full type hints + Pydantic schemas across the entire codebase
+
+---
+
+## Usage Guide
+
+### Step 1: Create an Account
+
+Sign up at [elementapi.vercel.app](https://elementapi.vercel.app) or via the API:
+
+```bash
+curl -X POST https://elementapi-backend.onrender.com/api/v1/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com", "password": "your-password"}'
+```
+
+### Step 2: Create an API Endpoint
+
+From the dashboard, click **Create New API** and provide:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Name** | A human-readable label | `HN Top Stories` |
+| **URL** | The webpage to scrape | `https://news.ycombinator.com` |
+| **Selector** | A CSS selector targeting the data | `.titleline > a` |
+
+Or via cURL:
+
+```bash
+curl -X POST https://elementapi-backend.onrender.com/api/v1/endpoints \
+  -H "Authorization: Bearer <your-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "HN Top Stories", "url": "https://news.ycombinator.com", "selector": ".titleline > a"}'
+```
+
+### Step 3: Consume Your API
+
+Use the `X-API-Key` header (found in **Settings > API Key** on the dashboard):
+
+```bash
+curl https://elementapi-backend.onrender.com/api/v1/run/hn-top-stories \
+  -H "X-API-Key: sk_live_xxxxx"
+```
+
+**Python:**
+```python
+import requests
+
+response = requests.get(
+    "https://elementapi-backend.onrender.com/api/v1/run/hn-top-stories",
+    headers={"X-API-Key": "sk_live_xxxxx"}
+)
+print(response.json()["data"])
+```
+
+**JavaScript:**
+```javascript
+const res = await fetch(
+  "https://elementapi-backend.onrender.com/api/v1/run/hn-top-stories",
+  { headers: { "X-API-Key": "sk_live_xxxxx" } }
+);
+const { data } = await res.json();
+console.log(data);
+```
+
+### Step 4: That's It
+
+If the target website changes its layout, ElementAPI will automatically heal the selector and keep returning your data. No manual maintenance required.
 
 ---
 
@@ -177,5 +244,3 @@ All endpoints are prefixed with `/api/v1`. Authentication is via Bearer token (d
 - **Rate Limiting** — Sliding-window rate limiter on all endpoints, with stricter limits on auth routes
 - **Token-based Auth** — JWT authentication for dashboard access, API key authentication for external scripts
 - **Input Validation** — Strict schema validation on all user inputs
-
----
